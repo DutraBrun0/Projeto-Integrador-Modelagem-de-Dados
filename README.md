@@ -42,6 +42,7 @@ Empresa -> Processos -> Problemas -> Requisitos -> Regras de negócio
 
 ### 2.1 Identificação
 
+| --- | --- |
 
 | Nome | Start Campos |
 | Razão social localizada | Start Campos Ltda. |
@@ -49,6 +50,7 @@ Empresa -> Processos -> Problemas -> Requisitos -> Regras de negócio
 | Localização | Rua Santa Ifigênia, 51, Santa Efigênia, São Paulo - SP |
 | Canais de venda | Loja física e atendimento online |
 | Público principal | Consumidores interessados em consoles, jogos e acessórios gamers |
+| --- | --- |
 
 ### 2.2 Produtos e serviços
 
