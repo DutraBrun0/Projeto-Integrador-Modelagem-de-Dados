@@ -98,7 +98,7 @@ Para repor o estoque, a empresa consulta fornecedores, registra a compra e confe
 
 ## 3. Justificativa da escolha
 
-A Start Campos foi escolhida porque um dos integrantes mencionou que trabalhava na loja, então usamos para a realização da tarefa. e possui processos variados e integrados que podem ser representados por um sistema ERP. A operação simultânea de vendas físicas e online exige que informações de produtos, estoque, clientes, pagamentos e entregas permaneçam consistentes em todos os canais.
+A Start Campos foi escolhida porque possui processos variados e integrados que podem ser representados por um sistema ERP. A operação simultânea de vendas físicas e online exige que informações de produtos, estoque, clientes, pagamentos e entregas permaneçam consistentes em todos os canais.
 
 O trabalho com produtos novos e seminovos aumenta a necessidade de diferenciar a condição dos itens, registrar números de série quando necessário, acompanhar garantias e impedir a venda de produtos indisponíveis.
 
