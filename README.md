@@ -42,7 +42,7 @@ Empresa -> Processos -> Problemas -> Requisitos -> Regras de negócio
 
 ### 2.1 Identificação
 
-| Informação acadêmica | Descrição |
+| Informação | Descrição |
 | --- | --- |
 | Nome | Start Campos |
 | Razão social localizada | Start Campos Ltda. |
