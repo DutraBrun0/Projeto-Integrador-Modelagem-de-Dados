@@ -584,7 +584,7 @@ Produtos, categorias, fornecedores, clientes e funcionários envolvidos em opera
 
 A análise da Start Campos demonstrou que uma loja com atendimento físico e online depende da integração de várias informações. O modelo proposto conecta clientes, funcionários, produtos, fornecedores, compras, estoque, vendas, pagamentos, entregas e pós-venda.
 
-Os problemas sustentam os requisitos; os requisitos e regras sustentam as entidades, atributos, relacionamentos e cardinalidades. Assim, o DER não é um desenho isolado, mas a consequência da análise do funcionamento considerado para a empresa.
+Os problemas sustentam os requisitos; os requisitos e regras sustentam as entidades, atributos, relacionamentos e cardinalidades. Assim, o DER não é um desenho isolado, mas a consequência da análise do funcionamento para a empresa.
 
 Esta entrega fornece a base para as próximas etapas: modelo lógico, normalização, definição dos tipos de dados, modelo físico e implementação do banco de dados.
 
