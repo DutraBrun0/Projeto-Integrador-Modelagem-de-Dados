@@ -207,8 +207,6 @@ flowchart TD
 | RNF10 | Recuperação | O banco deverá possuir backups periódicos e procedimento de restauração testado. |
 | RNF11 | Evolução | A estrutura deverá aceitar novas categorias, fornecedores, canais e entregas sem perder histórico. |
 
-Os valores de desempenho, disponibilidade e periodicidade de backup são parâmetros propostos e devem ser validados com a empresa.
-
 ---
 
 ## 8. Regras de negócio
