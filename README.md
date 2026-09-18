@@ -73,7 +73,7 @@ Um mesmo produto pode ser adquirido de fornecedores diferentes, com preço de co
 - Trocas, devoluções e garantias;
 - Consultas gerenciais e relatórios.
 
-### 2.4 Funcionamento considerado
+### 2.4 Funcionamento
 
 Na loja física, o cliente consulta os produtos, recebe atendimento, escolhe os itens e realiza o pagamento. A venda deve reduzir o estoque e registrar o funcionário responsável.
 
