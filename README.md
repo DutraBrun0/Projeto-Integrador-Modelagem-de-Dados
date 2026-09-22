@@ -498,12 +498,17 @@ O conteúdo completo está em [docs/dicionario-dados-conceitual.md](docs/diciona
 
 Exemplo:
 
-| Entidade | Atributo | Classificação | Descrição | Regra/observação |
-|---|---|---|---|---|
-| Cliente | `id_cliente` | Identificador | Identifica unicamente o cliente. | Não pode se repetir. |
-| Cliente | `nome` | Simples | Nome completo do cliente. | Obrigatório. |
-| Cliente | `cpf` | Simples | Documento do cliente. | Não pode se repetir quando informado. |
-| Cliente | `telefone` | Multivalorado | Telefone de contato. | Pode haver mais de um. |
+###  Cliente
+
+| Nome do campo | Tipo de dado | Tamanho / precisão | Nulo? | Chave | Descrição / regra de negócio |
+|---|---|---|:---:|:---:|---|
+| id_cliente | INT | — | NÃO | PK | Identificador único do cliente. |
+| nome | VARCHAR | 100 | NÃO | — | Nome completo do cliente. |
+| cpf | CHAR | 11 | SIM | — | CPF do cliente. Não pode se repetir quando informado. |
+| telefone | VARCHAR | 20 | SIM | — | Telefone principal de contato do cliente. |
+| email | VARCHAR | 150 | SIM | — | E-mail do cliente. Não pode se repetir quando informado. |
+| data_cadastro | DATETIME | — | NÃO | — | Data e hora do cadastro do cliente. |
+| status | VARCHAR | 20 | NÃO | — | Situação do cadastro, como ativo ou inativo. |
 
 ---
 
