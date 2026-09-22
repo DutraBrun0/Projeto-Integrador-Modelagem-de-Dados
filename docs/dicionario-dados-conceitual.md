@@ -199,8 +199,8 @@ Para esta etapa, foram considerados tipos compatíveis com MySQL.
 | motivo | VARCHAR | 255 | NÃO | — | Motivo informado pelo cliente. |
 | status | VARCHAR | 20 | NÃO | — | Situação da solicitação. |
 | prazo | DATE | — | NÃO | — | Data limite para tratamento da solicitação. |
-| resolucao | VARCHAR | 255 | SIM | — | Solução ou justificativa final. |
-| data_conclusao | DATETIME | SIM | — | — | Data e hora do encerramento da solicitação. |
+| resolucao | VARCHAR | 255 | — | SIM | Solução ou justificativa final. |
+| data_conclusao | DATETIME | — | SIM | — | Data e hora do encerramento da solicitação. |
 
 ### Observações gerais
 
