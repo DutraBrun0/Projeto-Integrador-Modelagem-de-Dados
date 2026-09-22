@@ -9,9 +9,9 @@ Para esta etapa, foram considerados tipos compatíveis com MySQL.
 |---|---|---|:---:|:---:|---|
 | id_cliente | INT | — | NÃO | PK | Identificador único do cliente. |
 | nome | VARCHAR | 100 | NÃO | — | Nome completo do cliente. |
-| cpf | CHAR | 11 | SIM | UNIQUE | CPF do cliente. Não pode se repetir quando informado. |
+| cpf | CHAR | 11 | SIM | — | CPF do cliente. Não pode se repetir quando informado. |
 | telefone | VARCHAR | 20 | SIM | — | Telefone principal de contato do cliente. |
-| email | VARCHAR | 150 | SIM | UNIQUE | E-mail do cliente. Não pode se repetir quando informado. |
+| email | VARCHAR | 150 | SIM | — | E-mail do cliente. Não pode se repetir quando informado. |
 | data_cadastro | DATETIME | — | NÃO | — | Data e hora do cadastro do cliente. |
 | status | VARCHAR | 20 | NÃO | — | Situação do cadastro, como ativo ou inativo. |
 
@@ -20,7 +20,7 @@ Para esta etapa, foram considerados tipos compatíveis com MySQL.
 | Nome do campo | Tipo de dado | Tamanho / precisão | Nulo? | Chave | Descrição / regra de negócio |
 |---|---|---|:---:|:---:|---|
 | id_perfil | INT | — | NÃO | PK | Identificador único do perfil de acesso. |
-| nome | VARCHAR | 50 | NÃO | UNIQUE | Nome do perfil de acesso. |
+| nome | VARCHAR | 50 | NÃO | — | Nome do perfil de acesso. |
 | descricao | VARCHAR | 255 | NÃO | — | Descrição das permissões do perfil. |
 
 ### Funcionario
@@ -30,10 +30,10 @@ Para esta etapa, foram considerados tipos compatíveis com MySQL.
 | id_funcionario | INT | — | NÃO | PK | Identificador único do funcionário. |
 | id_perfil | INT | — | NÃO | FK | Perfil de acesso associado ao funcionário. |
 | nome | VARCHAR | 100 | NÃO | — | Nome completo do funcionário. |
-| cpf | CHAR | 11 | NÃO | UNIQUE | CPF do funcionário. Não pode se repetir. |
+| cpf | CHAR | 11 | NÃO | — | CPF do funcionário. Não pode se repetir. |
 | cargo | VARCHAR | 50 | NÃO | — | Cargo exercido pelo funcionário. |
-| email | VARCHAR | 150 | SIM | UNIQUE | E-mail profissional do funcionário. |
-| login | VARCHAR | 50 | NÃO | UNIQUE | Login utilizado para acesso ao sistema. |
+| email | VARCHAR | 150 | SIM | — | E-mail profissional do funcionário. |
+| login | VARCHAR | 50 | NÃO | — | Login utilizado para acesso ao sistema. |
 | senha_hash | VARCHAR | 255 | NÃO | — | Senha armazenada de forma protegida. |
 | status | VARCHAR | 20 | NÃO | — | Situação do funcionário no sistema. |
 
@@ -42,7 +42,7 @@ Para esta etapa, foram considerados tipos compatíveis com MySQL.
 | Nome do campo | Tipo de dado | Tamanho / precisão | Nulo? | Chave | Descrição / regra de negócio |
 |---|---|---|:---:|:---:|---|
 | id_categoria | INT | — | NÃO | PK | Identificador único da categoria. |
-| nome | VARCHAR | 100 | NÃO | UNIQUE | Nome da categoria. |
+| nome | VARCHAR | 100 | NÃO | — | Nome da categoria. |
 | descricao | VARCHAR | 255 | SIM | — | Descrição da categoria. |
 | status | VARCHAR | 20 | NÃO | — | Situação da categoria. |
 
@@ -52,7 +52,7 @@ Para esta etapa, foram considerados tipos compatíveis com MySQL.
 |---|---|---|:---:|:---:|---|
 | id_produto | INT | — | NÃO | PK | Identificador único do produto. |
 | id_categoria | INT | — | NÃO | FK | Categoria à qual o produto pertence. |
-| sku | VARCHAR | 30 | NÃO | UNIQUE | Código único do produto no catálogo. |
+| sku | VARCHAR | 30 | NÃO | — | Código único do produto no catálogo. |
 | nome | VARCHAR | 100 | NÃO | — | Nome comercial do produto. |
 | descricao | VARCHAR | 255 | SIM | — | Descrição complementar do produto. |
 | marca | VARCHAR | 80 | SIM | — | Marca ou fabricante do produto. |
@@ -69,7 +69,7 @@ Para esta etapa, foram considerados tipos compatíveis com MySQL.
 | id_fornecedor | INT | — | NÃO | PK | Identificador único do fornecedor. |
 | razao_social | VARCHAR | 150 | NÃO | — | Razão social do fornecedor. |
 | nome_fantasia | VARCHAR | 100 | SIM | — | Nome comercial do fornecedor. |
-| cnpj | CHAR | 14 | SIM | UNIQUE | CNPJ do fornecedor. Não pode se repetir quando informado. |
+| cnpj | CHAR | 14 | SIM | — | CNPJ do fornecedor. Não pode se repetir quando informado. |
 | telefone | VARCHAR | 20 | SIM | — | Telefone principal de contato. |
 | email | VARCHAR | 150 | SIM | — | E-mail do fornecedor. |
 | status | VARCHAR | 20 | NÃO | — | Situação do fornecedor. |
