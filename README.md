@@ -425,6 +425,7 @@ Todos os demais atributos apresentados na seção 12 e não citados nesta tabela
 `numero_serie` é simples: nos produtos controlados individualmente, cada ItemCompra ou ItemVenda representa uma unidade e possui quantidade igual a 1, conforme RN25. O atributo `condicao` permanece em Produto porque cada combinação entre modelo e condição utiliza um SKU próprio, conforme RN26.
 
 `referencia_origem`, de MovimentacaoEstoque, identifica qual operação (Venda, Compra ou ajuste manual) originou a movimentação. Reconhecemos que essa ligação poderia ser modelada como um relacionamento formal de MovimentacaoEstoque com Venda e com Compra, à semelhança dos demais vínculos do modelo. Optamos por tratá-la como atributo simples porque a origem é polimórfica — uma mesma movimentação pode se referir a apenas uma entre três possibilidades distintas (Venda, Compra ou ajuste sem operação associada) — e representar isso como múltiplos relacionamentos opcionais introduziria complexidade desproporcional ao nível conceitual desta entrega. Essa decisão poderá ser revista no modelo lógico, quando a referência de origem provavelmente se tornará uma chave estrangeira polimórfica ou um conjunto de relacionamentos opcionais mutuamente exclusivos.
+
 ---
 
 ## 13. Relacionamentos
