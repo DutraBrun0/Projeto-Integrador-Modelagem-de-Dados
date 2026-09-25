@@ -370,25 +370,23 @@ flowchart TD
 
 ## 11. Entidades
 
-| Entidade | Tipo | Finalidade | Origem na análise |
-|---|---|---|---|
-| Cliente | Forte | Representar a pessoa atendida e seu histórico | Cadastro, venda online, entrega e pós-venda |
-| PerfilAcesso | Forte | Definir conjuntos de permissões | Controle de acesso |
-| Funcionario | Forte | Identificar quem executa operações | Vendas, compras, estoque e pós-venda |
-| Categoria | Forte | Organizar o catálogo | Classificação de produtos |
-| Produto | Forte | Representar cada item comercializado | Catálogo, estoque, compras e vendas |
-| Fornecedor | Forte | Representar quem fornece os produtos | Processo de reposição |
-| Fornecimento | Associativa | Relacionar fornecedor e produto e registrar condições | Comparação de preço e prazo |
-| Compra | Forte | Registrar uma aquisição | Compras e entradas de estoque |
-| ItemCompra | Associativa | Relacionar produtos a cada compra | Quantidade e custo por compra |
-| Venda | Forte | Registrar uma operação física ou online | Processo comercial |
-| ItemVenda | Associativa | Relacionar produtos a cada venda | Preço e desconto por venda |
-| Pagamento | Forte | Registrar valores recebidos | Confirmação financeira e pagamento dividido |
-| Entrega | Forte | Acompanhar o envio de uma venda | Vendas entregues ou retiradas |
-| MovimentacaoEstoque | Forte | Manter o histórico do saldo | Entradas, saídas, reservas e ajustes |
-| PosVenda | Forte | Registrar troca, devolução ou garantia | Atendimento posterior à venda |
-
-> Não foi identificada entidade fraca. Todas as entidades possuem identificador próprio. Uma dependência operacional, como Entrega depender de Venda, não torna a entidade fraca se ela puder ser identificada pelo próprio identificador.
+| Entidade            | Tipo                | Finalidade                                             | Origem na análise                           |
+| ------------------- | ------------------- | ------------------------------------------------------- | -------------------------------------------- |
+| Cliente             | Forte               | Representar a pessoa atendida e seu histórico           | Cadastro, venda online, entrega e pós-venda |
+| PerfilAcesso        | Forte               | Definir conjuntos de permissões                          | Controle de acesso                          |
+| Funcionario         | Forte               | Identificar quem executa operações                       | Vendas, compras, estoque e pós-venda        |
+| Categoria           | Forte               | Organizar o catálogo                                     | Classificação de produtos                   |
+| Produto             | Forte               | Representar cada item comercializado                     | Catálogo, estoque, compras e vendas         |
+| Fornecedor          | Forte               | Representar quem fornece os produtos                     | Processo de reposição                       |
+| Fornecimento        | Associativa (N:N)   | Relacionar fornecedor e produto e registrar condições     | Comparação de preço e prazo                 |
+| Compra              | Forte               | Registrar uma aquisição                                  | Compras e entradas de estoque               |
+| ItemCompra          | Fraca (associativa) | Relacionar produtos a cada compra                        | Quantidade e custo por compra               |
+| Venda               | Forte               | Registrar uma operação física ou online                  | Processo comercial                          |
+| ItemVenda           | Fraca (associativa) | Relacionar produtos a cada venda                         | Preço e desconto por venda                  |
+| Pagamento           | Forte               | Registrar valores recebidos                              | Confirmação financeira e pagamento dividido |
+| Entrega             | Forte               | Acompanhar o envio de uma venda                          | Vendas entregues ou retiradas               |
+| MovimentacaoEstoque | Forte               | Manter o histórico do saldo                              | Entradas, saídas, reservas e ajustes        |
+| PosVenda            | Forte               | Registrar troca, devolução ou garantia                   | Atendimento posterior à venda               ||
 
 ---
 
