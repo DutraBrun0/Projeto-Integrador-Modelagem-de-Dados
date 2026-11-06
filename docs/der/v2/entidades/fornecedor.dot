@@ -1,0 +1,28 @@
+graph E {
+  graph [layout=twopi, root=FORNECEDOR, ranksep=1.25, overlap=false, pad=0.25, fontname="Helvetica", splines=true];
+  node [fontname="Helvetica", fontsize=13];
+  edge [color="#36536B"];
+  FORNECEDOR [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>FORNECEDOR</B>>, width=2.6, height=0.8];
+  a0 [shape=ellipse, style="solid", peripheries=1, label=<<U>id_fornecedor</U>>];
+  FORNECEDOR -- a0;
+  a1 [shape=ellipse, style="solid", peripheries=1, label="nome_fornecedor"];
+  FORNECEDOR -- a1;
+  a2 [shape=ellipse, style="solid", peripheries=1, label="cnpj"];
+  FORNECEDOR -- a2;
+  a3 [shape=ellipse, style="solid", peripheries=2, label="endereco"];
+  FORNECEDOR -- a3;
+  a3_0 [shape=ellipse, label="cep", fontsize=11];
+  a3 -- a3_0;
+  a3_1 [shape=ellipse, label="logradouro", fontsize=11];
+  a3 -- a3_1;
+  a3_2 [shape=ellipse, label="numero", fontsize=11];
+  a3 -- a3_2;
+  a3_3 [shape=ellipse, label="bairro", fontsize=11];
+  a3 -- a3_3;
+  a3_4 [shape=ellipse, label="cidade", fontsize=11];
+  a3 -- a3_4;
+  a3_5 [shape=ellipse, label="estado", fontsize=11];
+  a3 -- a3_5;
+  a3_6 [shape=ellipse, label="tipo_endereco", fontsize=11];
+  a3 -- a3_6;
+}

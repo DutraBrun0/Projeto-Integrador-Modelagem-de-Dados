@@ -4,9 +4,9 @@
 
 ## Visão geral
 
-Este projeto apresenta a análise, a modelagem e a implementação do banco de dados de um sistema ERP para a **Start Campos**, loja de pequeno porte especializada na venda de videogames, consoles e acessórios. O sistema integra as operações da loja física e dos canais de venda online, organizando informações de clientes, funcionários, produtos, estoque, fornecedores, compras, contas a pagar, vendas, pagamentos, entregas e pós-venda.
+Este projeto apresenta a análise, a modelagem e a implementação do banco de dados de um sistema ERP para a **Start Campos**, loja de pequeno porte especializada na venda de videogames, consoles e acessórios. O banco organiza clientes, funcionários, catálogo, estoque, fornecedores, compras com nota fiscal, vendas, pagamentos e pós-venda.
 
-Na primeira entrega, a equipe percorreu o caminho do problema real ao DER. Na entrega final, o modelo foi revisado a partir da devolutiva do professor e convertido em banco de dados:
+Na primeira entrega, a equipe percorreu o caminho do problema real ao DER. Na entrega final, o modelo foi revisado a partir da devolutiva do professor e implementado em MySQL:
 
 ```text
 DER -> Revisão do modelo conceitual -> Modelo lógico -> PK + FK + restrições
@@ -16,11 +16,13 @@ DER -> Revisão do modelo conceitual -> Modelo lógico -> PK + FK + restrições
 
 | Artefato | Onde está |
 |---|---|
+| DER conceitual atualizado | [docs/der/](docs/der/README.md) |
 | Modelo lógico, normalização e restrições | [docs/modelo-logico/modelo-logico.md](docs/modelo-logico/modelo-logico.md) |
-| Diagrama do modelo lógico | [docs/modelo-logico/modelo-logico.png](docs/modelo-logico/modelo-logico.png) |
-| DER | [docs/der/](docs/der/) |
-| Dicionário de dados | [docs/dicionario-dados-conceitual.md](docs/dicionario-dados-conceitual.md) (primeira entrega — em atualização) |
-| Scripts SQL | `sql/` (em construção) |
+| Dicionário de dados | [docs/dicionario-dados/dicionario-dados.md](docs/dicionario-dados/dicionario-dados.md) |
+| Scripts SQL | [sql/](sql/README.md) |
+| Evidências dos testes | [evidencias/](evidencias/) |
+| Uso de IA | [docs/prompts-ia.md](docs/prompts-ia.md) |
+| Checklist da entrega final | [docs/checklist-entrega-final.md](docs/checklist-entrega-final.md) |
 
 ---
 
@@ -34,7 +36,8 @@ DER -> Revisão do modelo conceitual -> Modelo lógico -> PK + FK + restrições
 | Instituição | UNICID |
 | Disciplina | Modelagem de Dados |
 | Professor | Clovis Jose Ramos Ferraro |
-| SGBD | MySQL |
+| SGBD | MySQL 8.0.16 ou superior |
+| Banco | `sistema_comercial` |
 
 ---
 
@@ -134,15 +137,12 @@ O negócio é adequado à disciplina porque permite transformar situações conc
 | P08 | Trocas e garantias sem histórico centralizado | Retrabalho e falta de acompanhamento | Módulo de pós-venda |
 | P09 | Relatórios produzidos manualmente | Demora e menor confiabilidade nas decisões | Relatórios automáticos |
 | P10 | Alterações de estoque sem identificação do responsável | Dificuldade de auditoria | Histórico de movimentações |
-| P11 | Obrigações com fornecedores sem controle por vencimento | O gestor não sabe quanto precisa pagar em cada período | Registrar parcelas a pagar vinculadas às compras |
-
-O problema P11 foi acrescentado na entrega final, a partir da devolutiva da primeira entrega (controle financeiro).
 
 ---
 
 ## 4. Solução proposta
 
-Um ERP com banco de dados único para a loja física e os canais online. Ele centraliza clientes, funcionários, catálogo, estoque, compras, vendas, pagamentos, entregas e pós-venda; mantém o histórico de cada movimentação de estoque com responsável e origem; rastreia cada unidade com número de série; e controla os recebimentos das vendas e as parcelas a pagar aos fornecedores.
+Um ERP com banco de dados único que centraliza clientes, funcionários, catálogo, estoque, fornecedores, compras, vendas, pagamentos e pós-venda. O estoque tem saldo atual, estoque mínimo e histórico de movimentações com responsável; as compras são documentadas por nota fiscal; e cada venda registra seus itens, os descontos e um ou mais pagamentos.
 
 ### 4.1 Processos de negócio
 
@@ -154,8 +154,10 @@ Um ERP com banco de dados único para a loja física e os canais online. Ele cen
 | PR04 | Gestão de produtos | Usuário autorizado | Inclusão ou alteração de produto | Conferir cadastro, categoria, condição, preço e estoque mínimo | Produto e categoria | Catálogo atualizado |
 | PR05 | Atendimento ao cliente | Cliente e funcionário | Primeiro atendimento ou identificação | Consultar cadastro ou registrar cliente | Cadastro e histórico | Cliente identificado |
 | PR06 | Troca, devolução ou garantia | Cliente e funcionário | Cliente apresenta solicitação | Localizar venda e item, analisar condições e registrar solução | Item vendido, motivo, prazo e solução | Atendimento concluído ou recusado |
-| PR07 | Controle financeiro | Usuário autorizado | Compra, venda ou pagamento | Acompanhar os recebimentos das vendas e as parcelas a pagar aos fornecedores por vencimento | Recebimentos, contas a pagar, vencimentos e situação | Visão de recebimentos e obrigações |
+| PR07 | Controle financeiro | Usuário autorizado | Venda paga ou compra recebida | Registrar os pagamentos recebidos em cada venda, por forma de pagamento, e o valor e os impostos da nota fiscal de cada compra | Recebimentos por venda e por forma; valores e impostos das compras | Visão do que entrou e do que foi comprado |
 | PR08 | Gestão de usuários | Administrador | Admissão, mudança de função ou desligamento | Cadastrar, associar perfil, alterar ou inativar usuário | Funcionário, perfil e status | Permissões atualizadas |
+
+O processo PR07 foi revisado na entrega final (seção 15).
 
 ### 4.2 Integração dos processos
 
@@ -230,14 +232,12 @@ flowchart TD
     B --> C[Consultar fornecedores, preços e prazos]
     C --> D[Selecionar fornecedor]
     D --> E[Registrar compra e itens]
-    E --> E2[Registrar parcelas a pagar]
-    E2 --> F[Receber e conferir produtos]
+    E --> F[Receber e conferir produtos]
     F --> G{Recebimento correto?}
     G -->|Não| H[Registrar divergência e contatar fornecedor]
     H --> F
     G -->|Sim| I[Confirmar recebimento]
-    I --> I2[Registrar unidades seriadas, quando houver]
-    I2 --> J[Gerar entradas no estoque]
+    I --> J[Gerar entradas no estoque]
     J --> K[Atualizar custos e saldo]
     K --> Z([Fim])
 ```
@@ -269,7 +269,7 @@ flowchart TD
 
 ## 5. Requisitos e regras de negócio
 
-Itens alterados ou acrescentados na entrega final: **RF08, RF29, RF30, RN03, RN15, RN18, RN25, RN31 a RN35, PR07 e P11**. O motivo de cada alteração está na seção 15.
+Os requisitos e as regras da primeira entrega foram revistos para representar o banco implementado. A seção 5.5 mostra onde cada requisito chegou no banco — a pergunta da devolutiva "onde esta necessidade chegou no DER?".
 
 ### 5.1 Requisitos funcionais
 
@@ -282,7 +282,7 @@ Itens alterados ou acrescentados na entrega final: **RF08, RF29, RF30, RN03, RN1
 | RF05 | O sistema deverá identificar possíveis duplicidades de CPF, telefone ou e-mail. |
 | RF06 | O sistema deverá cadastrar e organizar categorias. |
 | RF07 | O sistema deverá cadastrar produtos com SKU, nome, marca, descrição, condição, preço e estoque mínimo. |
-| RF08 | O sistema deverá registrar cada unidade de produto controlado por série e acompanhar sua situação desde a entrada até a saída do estoque. |
+| RF08 | O sistema deverá registrar número de série nos itens controlados individualmente. |
 | RF09 | O sistema deverá cadastrar fornecedores e relacionar os produtos oferecidos, com preço e prazo. |
 | RF10 | O sistema deverá registrar compras e seus respectivos itens. |
 | RF11 | O sistema deverá atualizar o estoque após o recebimento de uma compra. |
@@ -303,8 +303,6 @@ Itens alterados ou acrescentados na entrega final: **RF08, RF29, RF30, RN03, RN1
 | RF26 | O sistema deverá filtrar informações por período, cliente, produto, canal, status e funcionário. |
 | RF27 | O sistema deverá registrar o usuário responsável pelas operações relevantes. |
 | RF28 | O sistema deverá apresentar um painel com indicadores da operação. |
-| RF29 | O sistema deverá registrar as parcelas a pagar de cada compra, com vencimento, valor e situação. |
-| RF30 | O sistema deverá consultar as contas a pagar por período de vencimento e indicar as vencidas. |
 
 ### 5.2 Requisitos não funcionais
 
@@ -326,43 +324,40 @@ Os valores de desempenho, disponibilidade e periodicidade de backup são parâme
 
 ### 5.3 Regras de negócio
 
+Regras revisadas na entrega final: **RN03, RN08, RN15, RN18, RN19, RN22 e RN26**. Regras marcadas como fora do escopo continuam válidas para o negócio, mas não estão implementadas nesta versão do banco.
+
 | ID | Regra |
 |---|---|
 | RN01 | Cada produto deve pertencer a exatamente uma categoria. |
 | RN02 | Uma categoria pode existir sem produtos e classificar vários produtos. |
-| RN03 | Uma venda pode ser aberta sem itens, mas só pode ser confirmada ou concluída se possuir pelo menos um item. |
+| RN03 | Uma venda pode ser criada sem itens (status EM ANDAMENTO), mas só pode ser concluída se possuir pelo menos um item. |
 | RN04 | Cada item de venda deve se referir a exatamente um produto. |
 | RN05 | A quantidade vendida não pode ultrapassar a disponível, considerando reservas ativas. |
 | RN06 | O estoque somente deve ser reduzido quando a venda atingir o status de confirmação. |
-| RN07 | O cancelamento deve liberar a reserva ou devolver ao estoque os itens comercializáveis. |
-| RN08 | Uma venda presencial pode ocorrer sem cliente identificado, salvo quando necessário para entrega, documento fiscal, garantia ou pós-venda. |
+| RN07 | O cancelamento deve liberar a reserva ou devolver ao estoque os itens comercializáveis. *(fora do escopo desta versão — seção 5.5)* |
+| RN08 | Toda venda deve estar associada a um cliente cadastrado, inclusive a venda presencial. |
 | RN09 | Toda venda online deve estar associada a um cliente identificado. |
 | RN10 | Toda venda deve ser registrada por exatamente um funcionário. |
 | RN11 | Uma venda pode possuir mais de um pagamento. |
 | RN12 | A venda só será considerada paga quando os pagamentos confirmados atingirem o valor devido. |
-| RN13 | Uma venda gera no máximo uma entrega; vendas de balcão ou retiradas podem não possuir entrega. |
+| RN13 | Uma venda gera no máximo uma entrega; vendas de balcão ou retiradas podem não possuir entrega. *(fora do escopo desta versão — seção 5.5)* |
 | RN14 | Toda compra deve estar associada a exatamente um fornecedor e um funcionário responsável. |
-| RN15 | Uma compra pode ser aberta sem itens, mas só pode ser confirmada se possuir pelo menos um item. |
+| RN15 | Toda compra deve possuir pelo menos um item. |
 | RN16 | O recebimento deve gerar movimentações de entrada para os produtos conferidos. |
-| RN17 | Todo ajuste manual de estoque deve possuir motivo e funcionário responsável. |
-| RN18 | Produtos seminovos têm a condição registrada no Produto (SKU próprio, RN26); o número de série e as observações da avaliação ficam na Unidade Serializada, quando aplicável. |
-| RN19 | O pós-venda deve estar vinculado ao item vendido e a um cliente identificado. |
+| RN17 | Todo ajuste manual de estoque deve possuir motivo e funcionário responsável. *(fora do escopo desta versão — seção 5.5)* |
+| RN18 | Produtos seminovos são cadastrados como produtos próprios, identificados no nome (ex.: "Nintendo Switch (seminovo)"), com preço próprio. |
+| RN19 | O pós-venda deve estar vinculado à venda e a um funcionário responsável; o cliente é o da venda. |
 | RN20 | Troca, devolução ou garantia depende da venda, do produto, do prazo e da política aplicável. |
-| RN21 | Cada funcionário deve possuir exatamente um perfil de acesso ativo por vez. |
-| RN22 | Registros usados em operações concluídas não devem ser excluídos; devem ser inativados. |
+| RN21 | Cada funcionário deve possuir exatamente um perfil de acesso ativo por vez. *(fora do escopo desta versão — seção 5.5)* |
+| RN22 | Registros usados em operações não podem ser excluídos: o banco bloqueia a exclusão de produtos, clientes, funcionários, fornecedores e vendas em uso. |
 | RN23 | Um fornecedor pode fornecer vários produtos, e um produto pode ser fornecido por vários fornecedores. |
-| RN24 | Preço de compra, prazo de entrega, código do fornecedor e quantidade mínima pertencem à relação entre fornecedor e produto. |
-| RN25 | Cada unidade de produto controlado por série é registrada como uma Unidade Serializada, ligada ao item de compra que lhe deu entrada e, quando vendida, ao item de venda. A quantidade do item corresponde ao número de unidades ligadas a ele. |
-| RN26 | Cada SKU representa uma combinação específica de modelo e condição, como novo ou seminovo. |
+| RN24 | Preço de compra, prazo de entrega, código do fornecedor e quantidade mínima pertencem à relação entre fornecedor e produto. *(fora do escopo desta versão — seção 5.5)* |
+| RN25 | Produtos controlados por série devem ser registrados individualmente, com quantidade igual a 1 em cada ItemCompra ou ItemVenda. *(fora do escopo desta versão — seção 5.5)* |
+| RN26 | Cada produto representa uma combinação específica de modelo e condição (novo ou seminovo). |
 | RN27 | Cada item de compra deve se referir a exatamente um produto. |
 | RN28 | Cada movimentação de estoque deve se referir a exatamente um produto. |
 | RN29 | Toda movimentação de estoque deve estar associada a exatamente um funcionário responsável, herdado da operação de origem ou informado no ajuste. |
 | RN30 | Toda solicitação de pós-venda deve possuir exatamente um funcionário responsável. |
-| RN31 | Uma compra pode gerar uma ou mais parcelas a pagar; cada parcela pertence a exatamente uma compra e é identificada pelo seu número dentro da compra. |
-| RN32 | A soma das parcelas de uma compra deve corresponder ao valor total da compra. |
-| RN33 | Uma parcela só pode ser considerada paga quando a data de pagamento estiver registrada. |
-| RN34 | O número de série não pode se repetir para o mesmo produto; cada unidade serializada possui uma situação (em estoque, reservada, vendida, devolvida ou baixada). |
-| RN35 | Toda movimentação de estoque se origina de no máximo uma operação (item de compra, item de venda ou pós-venda). O ajuste manual não possui operação de origem e exige motivo (RN17). |
 
 ### 5.4 Restrições e políticas organizacionais
 
@@ -381,264 +376,302 @@ Os valores de desempenho, disponibilidade e periodicidade de backup são parâme
 | RP11 | Backups devem ser executados regularmente e armazenados em local protegido. |
 | RP12 | Prazos, descontos e garantias devem ser parametrizáveis, pois dependem de decisões internas. |
 
-### 5.5 Matriz de rastreabilidade
+### 5.5 Cobertura dos requisitos no banco
 
-| Problema ou necessidade | Requisitos | Regras e políticas | Elementos do modelo | Processo |
-|---|---|---|---|---|
-| P01 - Divergência de estoque | RF11, RF12, RF16 e RF18 | RN05, RN06, RN07 e RN16 | Produto, ItemVenda e MovimentacaoEstoque | PR01, PR02 e PR03 |
-| P03 - Registro manual online | RF15, RF18, RF20 e RF21 | RN09, RN12, RN13 e RP06 | Cliente, Venda, Pagamento e Entrega | PR02 |
-| P04 - Duplicidade de clientes | RF04, RF05 e RF24 | RN08, RN09, RN19 e RN22 | Cliente, Venda e PosVenda | PR02, PR05 e PR06 |
-| P05 - Rastreabilidade de seminovos | RF07, RF08 e RF23 | RN18, RN19, RN20, RN25, RN34 e RP09 | Produto, UnidadeSerializada, ItemCompra, ItemVenda e PosVenda | PR03, PR04 e PR06 |
-| P06 - Condições de fornecimento | RF09 e RF10 | RN14, RN23 e RN24 | Fornecedor, Produto, Fornecimento e Compra | PR03 |
-| P07 - Pagamento e entrega separados | RF19, RF20 e RF21 | RN11, RN12, RN13, RP06 e RP07 | Venda, Pagamento e Entrega | PR01 e PR02 |
-| P08 - Pós-venda sem histórico | RF23 e RF24 | RN19, RN20, RN30 e RP08 | Cliente, ItemVenda e PosVenda | PR06 |
-| P10 - Movimentação sem responsável | RF12 e RF27 | RN16, RN17, RN28, RN29, RN35, RP03 e RP04 | Produto, Funcionario, MovimentacaoEstoque, ItemCompra, ItemVenda e PosVenda | PR01, PR03 e PR06 |
-| P11 - Contas a pagar sem controle | RF29 e RF30 | RN31, RN32 e RN33 | Compra e ContaPagar | PR03 e PR07 |
+| Requisito | Situação no banco | Onde |
+|---|---|---|
+| RF01 — login e senha | Fora do escopo desta versão | — |
+| RF02 — cadastro de funcionários | Atendido parcialmente (sem inativação; exclusão bloqueada quando em uso) | `funcionario` |
+| RF03 — perfil de acesso | Fora do escopo desta versão | — |
+| RF04 — cadastro de clientes | Atendido parcialmente (sem inativação; exclusão bloqueada quando em uso) | `cliente` |
+| RF05 — duplicidade de CPF, telefone ou e-mail | Atendido | UNIQUE em `cliente.CPF` + auditoria A10 |
+| RF06 — categorias | Atendido (lista fixa no CHECK) | `categoria` |
+| RF07 — cadastro de produtos | Atendido parcialmente: nome, preço, categoria e estoque mínimo; condição no nome do produto | `produto`, `estoque` |
+| RF08 — número de série | Fora do escopo desta versão | — |
+| RF09 — fornecedores | Atendido parcialmente: fornecedor e endereços; os produtos fornecidos aparecem pelas compras | `fornecedor`, `fornecedor_endereco`, `compra`, `item_compra` |
+| RF10 — compras e itens | Atendido | `compra`, `item_compra`, `Nota_Fiscal` |
+| RF11 — atualizar estoque no recebimento | Atendido | `movimentacao_estoque` (ENTRADA) + `estoque` |
+| RF12 — entradas, saídas, reservas e ajustes | Atendido parcialmente (sem reserva) | `movimentacao_estoque` |
+| RF13 — alerta de estoque mínimo | Atendido | `estoque.quantidade_minima` + consulta G5 |
+| RF14 — vendas na loja | Atendido | `venda`, `item_venda` |
+| RF15 — vendas online | Atendido parcialmente: registradas como vendas, sem distinção de canal | `venda` |
+| RF16 — verificar disponibilidade | Atendido | `estoque` (CHECK impede saldo negativo) |
+| RF17 — itens, preços e descontos | Atendido | `item_venda` |
+| RF18 — baixar estoque conforme o status | Atendido parcialmente (baixa na conclusão; sem reserva) | `movimentacao_estoque` (SAIDA) |
+| RF19 — várias formas de pagamento | Atendido | `venda_pagamento`, `forma_Pagamento` |
+| RF20 — status dos pagamentos | Fora do escopo desta versão: o pagamento registrado é o recebido | — |
+| RF21 — entregas e fretes | Fora do escopo desta versão | — |
+| RF22 — cancelamento de vendas | Fora do escopo desta versão | — |
+| RF23 — trocas, devoluções e garantias | Atendido parcialmente: vinculado à venda, com motivo e situação | `pos_venda` |
+| RF24 — histórico do cliente | Atendido | consulta Q7 |
+| RF25 — relatórios | Atendido | consultas gerenciais G1 a G11 |
+| RF26 — filtros | Atendido parcialmente (sem canal) | consultas |
+| RF27 — responsável pelas operações | Atendido | FK de funcionário em venda, compra, movimentação e pós-venda |
+| RF28 — painel de indicadores | Proposto | seção 14 (BI) |
 
 ### 5.6 Escopo financeiro
 
-| Dentro do escopo | Fora do escopo |
-|---|---|
-| Recebimentos das vendas, em uma ou mais formas de pagamento | Crediário próprio ou contas a receber parceladas de clientes |
-| Parcelas a pagar aos fornecedores, com vencimento e situação | Fluxo de caixa completo, conciliação bancária e contabilidade |
-| Consulta de vencimentos e contas em atraso | Despesas que não vêm de compras (aluguel, salários, impostos) |
+Resposta à devolutiva ("controle financeiro — peça sem destino"): o grupo optou por **declarar o escopo financeiro**, como o professor permitiu ("ou justificar claramente que determinadas funções financeiras estão fora do escopo").
 
-> Pendente de validação com a empresa: confirmar que a Start Campos compra dos fornecedores a prazo e não oferece crediário próprio.
+| Dentro do escopo | Fora do escopo desta versão |
+|---|---|
+| Pagamentos recebidos em cada venda, em uma ou mais formas (`venda_pagamento`) | Contas a pagar a fornecedores, vencimentos e parcelas |
+| Valor e impostos da nota fiscal de cada compra (`Nota_Fiscal`) | Contas a receber e crediário de clientes |
+| Consultas de faturamento, formas de pagamento e compras por fornecedor | Fluxo de caixa, conciliação bancária e contabilidade |
+
+> Pendente de validação com a empresa: confirmar que a Start Campos não precisa controlar, no sistema, os vencimentos das contas com fornecedores.
 
 ---
 
 ## 6. DER atualizado
 
-O DER utiliza a **notação de Chen** e permanece no nível conceitual: as ligações aparecem como relacionamentos, sem chaves estrangeiras. As chaves estrangeiras e as chaves compostas aparecem somente no modelo lógico (seção 7).
+O DER utiliza a **notação de Chen** e permanece no nível conceitual: as ligações aparecem como relacionamentos, sem chaves estrangeiras. Em verde, as entidades novas em relação à primeira entrega.
 
-![DER conceitual da Start Campos](docs/der/der-conceitual.png)
+![DER conceitual v2](docs/der/v2/der-v2-visao-geral.png)
 
-> ⚠️ A imagem acima ainda é o DER da primeira entrega. Ela deve ser atualizada com as entidades e cardinalidades das tabelas abaixo.
+- [Páginas de atributos e PDF completo](docs/der/README.md)
+- [DER da primeira entrega (histórico)](docs/der/v1-primeira-entrega/der-conceitual.png)
 
 ### 6.1 Entidades
 
-| Entidade | Tipo | Finalidade | Situação |
-|---|---|---|---|
-| Cliente | Forte | Representar a pessoa atendida e seu histórico | Primeira entrega |
-| Funcionario | Forte | Identificar quem executa as operações | Primeira entrega |
-| Cargo | Forte | Descrever os cargos da empresa | **Nova** |
-| HistoricoSalario | Forte | Registrar o salário do funcionário em cada cargo e período | **Nova** |
-| PerfilAcesso | Forte | Definir conjuntos de permissões | Primeira entrega |
-| Categoria | Forte | Organizar o catálogo | Primeira entrega |
-| Produto | Forte | Representar cada item comercializado | Primeira entrega |
-| Estoque | Forte | Guardar o saldo atual e o estoque mínimo de cada produto | **Nova** |
-| UnidadeSerializada | Forte | Representar cada unidade física com número de série | **Nova** (devolutiva) |
-| MovimentacaoEstoque | Forte | Manter o histórico do saldo | Primeira entrega (revisada) |
-| Fornecedor | Forte | Representar quem fornece os produtos | Primeira entrega |
-| Fornecimento | Associativa | Relacionar fornecedor e produto e registrar as condições | Primeira entrega |
-| Compra | Forte | Registrar uma aquisição | Primeira entrega |
-| ItemCompra | Associativa | Relacionar produtos a cada compra | Primeira entrega (revisada) |
-| ContaPagar | Fraca (dona: Compra) | Registrar as parcelas a pagar de cada compra | **Nova** (devolutiva) |
-| Venda | Forte | Registrar uma operação física ou online | Primeira entrega |
-| ItemVenda | Associativa | Relacionar produtos a cada venda | Primeira entrega (revisada) |
-| FormaPagamento | Forte | Cadastrar as formas de pagamento aceitas | **Nova** |
-| VendaPagamento | Forte | Registrar os valores recebidos de cada venda | Primeira entrega (antiga Pagamento) |
-| Entrega | Forte | Acompanhar o envio ou a retirada de uma venda | Primeira entrega |
-| PosVenda | Forte | Registrar troca, devolução ou garantia | Primeira entrega |
+| Entidade | Tipo | Finalidade |
+|---|---|---|
+| Cliente | Forte | Pessoa atendida e seu histórico |
+| Funcionario | Forte | Quem registra as operações |
+| Cargo | Forte | Cargos da loja |
+| HistoricoSalario | Forte | Salário de cada funcionário ao longo do tempo |
+| Categoria | Forte | Organização do catálogo |
+| Produto | Forte | Item comercializado (o seminovo é um produto próprio) |
+| Estoque | Forte | Saldo atual e estoque mínimo de cada produto |
+| MovimentacaoEstoque | Forte | Histórico de entradas, saídas e ajustes |
+| Fornecedor | Forte | Quem fornece os produtos |
+| NotaFiscal | Forte | Documento fiscal de cada compra |
+| Compra | Forte | Aquisição feita a um fornecedor |
+| ItemCompra | Associativa | Produtos de cada compra (N:N Compra × Produto) |
+| Venda | Forte | Operação de venda |
+| ItemVenda | Associativa | Produtos de cada venda (N:N Venda × Produto) |
+| FormaPagamento | Forte | Formas de pagamento aceitas |
+| VendaPagamento | Forte | Pagamentos recebidos em cada venda |
+| PosVenda | Forte | Garantias, devoluções, trocas e dúvidas |
 
 ### 6.2 Atributos
 
 | Entidade | Atributos |
 |---|---|
-| Cliente | `id_Cliente`, `sobrenome`, `nome`, `CPF`, `data_nascimento`, `tipo_cliente`, `telefone` (multivalorado: DDI, DDD, código da operadora, número, tipo), `email` (multivalorado: e-mail, tipo) |
-| Funcionario | `id_funcionario`, `sobrenome`, `nome`, `CPF`, `data_admissao`, `login`, `senha_hash`, `telefone` (multivalorado), `email` (multivalorado) |
-| Cargo | `id_cargo`, `tipo`, `Descrição` |
+| Cliente | `id_cliente`, `nome`, `sobrenome`, `CPF`, `data_nascimento`, `tipo_cliente`, `telefone` (multivalorado: DDI, DDD, código da operadora, número, tipo), `email` (multivalorado: e-mail, tipo) |
+| Funcionario | `id_funcionario`, `nome`, `sobrenome`, `CPF`, `data_admissao`, `telefone` (multivalorado), `email` (multivalorado) |
+| Cargo | `id_cargo`, `cargo` |
 | HistoricoSalario | `id_historico_salario`, `salario`, `data_inicio`, `data_fim` |
-| PerfilAcesso | `id_perfil`, `nome_perfil`, `descricao` |
-| Categoria | `id_Categoria`, `Tipo_categoria` |
-| Produto | `id_Produto`, `Nome_produto`, `preco_unitario`, `condicao`, `controla_serie` |
-| Estoque | `id_estoque`, `Quantidade`, `Estoque_Minimo`, `Data_Atualização` |
-| UnidadeSerializada | `id_unidade`, `numero_serie`, `observacoes`, `status_unidade` |
-| MovimentacaoEstoque | `ID_Movimentação`, `Quantidade`, `tipo_movimentação`, `Data_movimentação`, `Motivo` |
-| Fornecedor | `id_fornecedor`, `razao_social`, `endereço_fornecedor`, `cnpj` |
-| Fornecimento | `preco_compra`, `prazo_entrega_dias`, `codigo_produto_fornecedor`, `quantidade_minima` |
-| Compra | `id_compra`, `data_compra`, `status_compra`, `valor_total`, `nota_fiscal` |
-| ItemCompra | `Quantidade`, `preco_custo` |
-| ContaPagar | `nr_parcela` (identificador parcial), `valor_parcela`, `data_vencimento`, `data_pagamento`, `status_parcela` |
-| Venda | `id_Venda`, `Data_Venda`, `Status_Venda`, `canal` |
+| Categoria | `id_categoria`, `tipo_categoria` |
+| Produto | `id_Produto`, `Nome_produto`, `preco_unitario` |
+| Estoque | `id_estoque`, `quantidade_atual`, `quantidade_minima` |
+| MovimentacaoEstoque | `id_movimentacao`, `tipo_movimentacao`, `quantidade`, `data_movimentacao` |
+| Fornecedor | `id_fornecedor`, `nome_fornecedor`, `cnpj`, `endereco` (multivalorado e composto: CEP, logradouro, número, bairro, cidade, estado, tipo) |
+| NotaFiscal | `id_nota_fiscal`, `numero_nota`, `valor_pago`, `data_emissao`, `valor_impostos` |
+| Compra | `id_compra`, `data_compra`, `valor_compra` (derivado) |
+| ItemCompra | `quantidade`, `valor_pago` |
+| Venda | `id_venda`, `Data_Venda`, `Status_Venda`, `valor_venda` (derivado) |
 | ItemVenda | `Quantidade`, `preco_unitario`, `desconto_unitario` |
-| FormaPagamento | `id_Forma_Pagamento`, `tipo_forma_pagamento` |
-| VendaPagamento | `id_Venda_Pagamento`, `valor_pago`, `data_pagamento`, `status_pagamento` |
-| Entrega | `id_entrega`, `modalidade`, `destinatario`, `endereco` (composto: CEP, logradouro, número, complemento, bairro, cidade, UF), `valor_frete`, `codigo_rastreio`, `status_entrega`, `data_envio`, `data_conclusao` |
-| PosVenda | `id_posvenda`, `data_contato`, `tipo`, `descricao`, `status`, `data_resolucao` |
-
-Removidos em relação à primeira entrega: `numero_serie` dos itens (agora em UnidadeSerializada), `referencia_origem` da movimentação (agora relacionamentos "origina") e `frete` de Venda (fica em Entrega).
+| FormaPagamento | `id_forma_Pagamento`, `tipo_forma_pagamento` |
+| VendaPagamento | `id_venda_pagamento`, `valor_pago` |
+| PosVenda | `id_pos_venda`, `data_atendimento`, `motivo_contato`, `descricao_ocorrencia`, `status_atendimento` |
 
 ### 6.3 Relacionamentos N:N
 
 1. **Venda e Produto**, resolvido por **ItemVenda** (quantidade, preço praticado e desconto).
-2. **Compra e Produto**, resolvido por **ItemCompra** (quantidade e preço de custo).
-3. **Fornecedor e Produto**, resolvido por **Fornecimento** (preço de compra, prazo, código do fornecedor e quantidade mínima), cujos atributos dependem do par fornecedor × produto (RN24).
+2. **Compra e Produto**, resolvido por **ItemCompra** (quantidade e valor pago por unidade).
+
+Esses atributos pertencem à associação, porque dependem do par venda × produto ou compra × produto.
 
 ### 6.4 Cardinalidades
 
 | Entidade A | Cardinalidade A | Relacionamento | Cardinalidade B | Entidade B | Base |
 |---|:---:|---|:---:|---|---|
-| PerfilAcesso | (0,N) | define | (1,1) | Funcionario | RN21 |
-| Cargo | (0,N) | classifica | (1,1) | Funcionario | — |
-| Funcionario | (0,N) | possui | (1,1) | HistoricoSalario | — |
-| Cargo | (0,N) | referencia | (1,1) | HistoricoSalario | — |
-| Cliente | (0,N) | realiza | (0,1) | Venda | RN08 e RN09 |
+| Cliente | (0,N) | realiza | (1,1) | Venda | RN08 revisada |
 | Funcionario | (0,N) | registra | (1,1) | Venda | RN10 |
-| Venda | **(0,N)** | possui | (1,1) | ItemVenda | RN03 revisada |
-| Produto | (0,N) | compõe | (1,1) | ItemVenda | RN04 |
-| Venda | (0,N) | recebe | (1,1) | VendaPagamento | RN11 e RN12 |
-| FormaPagamento | (0,N) | classifica | (1,1) | VendaPagamento | RF19 |
-| Venda | (0,1) | gera | (1,1) | Entrega | RN13 |
-| ItemVenda | (0,N) | origina | (1,1) | PosVenda | RN19 e RN20 |
-| Cliente | (0,N) | solicita | (1,1) | PosVenda | RN19 |
+| Venda | **(0,N)** | contém | (0,N) | Produto (ItemVenda) | RN03 revisada, RN04 |
+| Venda | (0,N) | recebe | (1,1) | VendaPagamento | RN11 |
+| FormaPagamento | (0,N) | é paga com | (1,1) | VendaPagamento | RF19 |
+| Venda | (0,N) | origina | (1,1) | PosVenda | RN19 revisada |
 | Funcionario | (0,N) | atende | (1,1) | PosVenda | RN30 |
+| Cargo | (0,N) | ocupa | (1,1) | Funcionario | — |
+| Funcionario | (0,N) | recebe | (1,1) | HistoricoSalario | — |
 | Categoria | (0,N) | classifica | (1,1) | Produto | RN01 e RN02 |
-| Produto | (1,1) | possui | (1,1) | Estoque | RF13 |
-| Fornecedor | (0,N) | oferece | (1,1) | Fornecimento | RN23 e RN24 |
-| Produto | (0,N) | participa | (1,1) | Fornecimento | RN23 e RN24 |
+| Produto | (0,1) | controla | (1,1) | Estoque | RF13 |
+| Produto | (0,N) | possui | (1,1) | MovimentacaoEstoque | RN28 |
+| Funcionario | (0,N) | executa | (1,1) | MovimentacaoEstoque | RN29 |
 | Fornecedor | (0,N) | atende | (1,1) | Compra | RN14 |
 | Funcionario | (0,N) | registra | (1,1) | Compra | RN14 |
-| Compra | **(0,N)** | possui | (1,1) | ItemCompra | RN15 revisada |
-| Produto | (0,N) | compõe | (1,1) | ItemCompra | RN27 |
-| Compra | (0,N) | gera | (1,1) | ContaPagar | RN31 |
-| ItemCompra | (0,N) | dá entrada | (1,1) | UnidadeSerializada | RN25 |
-| ItemVenda | (0,N) | vende | (0,1) | UnidadeSerializada | RN25 |
-| Produto | (0,N) | possui | (1,1) | MovimentacaoEstoque | RN16 e RN28 |
-| Funcionario | (0,N) | executa | (1,1) | MovimentacaoEstoque | RN17 e RN29 |
-| ItemCompra | (0,N) | origina | (0,1) | MovimentacaoEstoque | RN16 e RN35 |
-| ItemVenda | (0,N) | origina | (0,1) | MovimentacaoEstoque | RN06, RN07 e RN35 |
-| PosVenda | (0,N) | origina | (0,1) | MovimentacaoEstoque | RN35 |
-| UnidadeSerializada | (0,N) | movimenta | (0,1) | MovimentacaoEstoque | RN34 |
+| NotaFiscal | (0,N) | documenta | (1,1) | Compra | — |
+| Compra | (0,N) | contém | (0,N) | Produto (ItemCompra) | RN15, RN27 |
 
 ### 6.5 Legenda
 
-- Retângulo: entidade forte · Retângulo duplo: entidade fraca
-- Losango: relacionamento · Losango duplo: relacionamento identificador
-- Retângulo envolvendo losango: entidade associativa
-- Elipse: atributo simples · Elipse dupla: multivalorado · Elipse tracejada: derivado
+- Retângulo: entidade · Retângulo envolvendo losango: entidade associativa · Losango: relacionamento
+- Elipse: atributo · Elipse dupla: multivalorado (com seus componentes) · Elipse tracejada: derivado
 - Sublinhado: identificador · Pares como `(0,N)` e `(1,1)`: cardinalidade mínima e máxima
 
 ---
 
 ## 7. Modelo lógico
 
-O DER foi convertido em **25 tabelas**, a partir do diagrama de tabelas da equipe e com as correções da devolutiva. O documento completo mostra a conversão de cada relacionamento e cardinalidade, as chaves primárias com justificativa, a normalização e as restrições: [docs/modelo-logico/modelo-logico.md](docs/modelo-logico/modelo-logico.md).
+O DER foi convertido em **22 tabelas**. O documento completo mostra a conversão de cada entidade e relacionamento, as chaves primárias com justificativa, a normalização e as restrições: [docs/modelo-logico/modelo-logico.md](docs/modelo-logico/modelo-logico.md).
 
 ![Modelo lógico](docs/modelo-logico/modelo-logico.png)
 
 | Classificação | Tabelas |
 |---|---|
-| Fortes | Cliente, Funcionario, Cargo, Historico_salario, Perfil_Acesso, Categoria, Produto, Estoque, Unidade_Serializada, Movimentação_Estoque, Fornecedor, Compra, Venda, forma_Pagamento, Venda_Pagamento, Entrega, PosVenda |
-| Vindas da 1FN (atributos multivalorados) | Cliente_Telefone, Cliente_email, telefone_funcionario, email_funcionario |
-| Associativas (N:N) | Item_Venda `(id_Venda, id_produto)`, Item_Compra `(id_Compra, id_produto)`, Fornecimento `(id_fornecedor, id_produto)` |
-| Fraca | Conta_Pagar `(id_compra, nr_parcela)` |
+| Fortes | cliente, funcionario, cargo, historico_salario, categoria, produto, estoque, movimentacao_estoque, fornecedor, Nota_Fiscal, compra, venda, forma_Pagamento, venda_pagamento, pos_venda |
+| Vindas da 1FN (atributos multivalorados) | cliente_telefone, cliente_email, funcionario_telefone, funcionario_email, fornecedor_endereco |
+| Associativas (N:N) | item_venda `(id_venda, id_produto)`, item_compra `(id_compra, id_produto)` |
 
-Principais conversões:
+Conversões aplicadas:
 
-- **1:N** → chave estrangeira do lado N (ex.: `Venda.id_Funcionario`).
-- **Participação mínima 0** → FK que aceita NULL (ex.: `Venda.id_Cliente`, pois a venda de balcão pode não ter cliente — RN08).
-- **1:1** → FK com UNIQUE (ex.: `Entrega.id_venda` — RN13; `Estoque.id_produto`).
+- **1:N** → chave estrangeira do lado N (ex.: `venda.id_Funcionario`).
+- **1:1** → FK com UNIQUE (`estoque.id_produto`).
 - **N:N** → tabela associativa com PK composta herdada das duas tabelas.
-- **Entidade fraca** → PK formada pela chave da dona + número sequencial (`Conta_Pagar`).
+- **Participação mínima 1** → FK NOT NULL (ex.: `venda.id_Cliente`).
+- **Atributo multivalorado** → tabela própria (telefones, e-mails, endereços).
 
 ---
 
 ## 8. Normalização
 
-Cada caso está documentado como **estrutura analisada → dependência funcional → problema → correção** na [seção 5 do modelo lógico](docs/modelo-logico/modelo-logico.md#5-normalização). Todos os casos são situações reais do DER da primeira entrega ou do diagrama da equipe.
+Cada caso está documentado como **estrutura analisada → dependência funcional → problema → correção** na [seção 4 do modelo lógico](docs/modelo-logico/modelo-logico.md#4-normalização). Todos são situações reais do DER da primeira entrega ou do primeiro diagrama de tabelas da equipe.
 
 | Forma normal | Estrutura analisada | Problema | Correção |
 |---|---|---|---|
-| 1FN | Cliente e Funcionario com `telefone` e `email` | Atributos multivalorados | Tabelas Cliente_Telefone, Cliente_email, telefone_funcionario e email_funcionario |
-| 1FN | Entrega com `endereco` | Atributo composto | Colunas atômicas (CEP, logradouro, número, complemento, bairro, cidade, UF) |
-| 1FN | Venda_Pagamento com `id_produto` | Um pagamento quita a venda inteira, que tem vários produtos | `id_produto` removido; produtos ficam em Item_Venda |
-| 2FN | Fornecedor com `id_produto` e `quantidade` | `endereço_fornecedor` e `cnpj` dependeriam só de parte da chave (id_fornecedor, id_produto) | Fornecedor separado de Fornecimento |
-| 2FN | Compra com `id_produto` | Data, fornecedor e nota fiscal dependeriam só de `id_compra` | `id_produto` removido; produtos ficam em Item_Compra |
-| 3FN | Funcionario com `cargo` | A descrição do cargo dependeria do cargo, não do funcionário | Tabela Cargo |
-| 3FN | `numero_serie` nos itens | Dados da unidade física dependiam do número de série | Tabela Unidade_Serializada |
-| 3FN | `frete` em Venda e em Entrega | Mesmo dado em duas tabelas | Frete apenas em Entrega |
+| 1FN | Cliente e Funcionario com `telefone` e `email` | Atributos multivalorados | Tabelas de telefone e e-mail; telefone dividido em DDI, DDD, operadora e número |
+| 1FN | Fornecedor com `endereço_fornecedor` | Atributo composto e multivalorado (sede, filial, armazém) | Tabela `fornecedor_endereco` |
+| 1FN | Venda_Pagamento com `id_produto` | O pagamento quita a venda inteira, que tem vários produtos | `id_produto` removido |
+| 2FN | Fornecedor com `id_produto` e `quantidade` | CNPJ e endereço dependeriam só de parte da chave | Produtos fora da tabela de fornecedor |
+| 2FN | Compra com `id_produto` | Data, fornecedor e nota dependeriam só de `id_compra` | Produtos em `item_compra` |
+| 3FN | Funcionario com `cargo` | Cargo é um cadastro próprio | Tabela `cargo` |
+| 3FN | Compra com `nota_fiscal` | Dados da nota dependem do número da nota | Tabela `Nota_Fiscal` |
+| 3FN | Venda com frete e totais | Valores derivados dos itens | Removidos; calculados nas consultas |
 
 ---
 
 ## 9. Dicionário de Dados
 
-> Em atualização. O dicionário será refeito a partir do modelo lógico, com tipo, tamanho, PK, FK, NULL, UNIQUE, DEFAULT e regra de cada atributo, e deverá representar exatamente o banco implementado em SQL.
-
-Dicionário da primeira entrega (histórico): [docs/dicionario-dados-conceitual.md](docs/dicionario-dados-conceitual.md).
+O dicionário descreve as 22 tabelas e seus atributos com tipo, tamanho, PK, FK (com ação ao excluir e alterar), NULL, UNIQUE, DEFAULT e regra, exatamente como estão no script: [docs/dicionario-dados/dicionario-dados.md](docs/dicionario-dados/dicionario-dados.md). O dicionário conceitual da primeira entrega foi mantido como histórico em [docs/dicionario-dados/dicionario-1a-entrega.md](docs/dicionario-dados/dicionario-1a-entrega.md).
 
 ---
 
 ## 10. Implementação SQL
 
-> Em construção pela equipe.
+Scripts MySQL em [sql/](sql/README.md), executados nesta ordem em banco vazio:
 
-O script MySQL implementará o modelo lógico da seção 7, com `CREATE DATABASE`, `CREATE TABLE`, PK, FK, `NOT NULL`, `UNIQUE`, `CHECK` e `DEFAULT`. As tabelas independentes serão criadas primeiro, seguidas das que dependem delas. O teste será feito em banco vazio, executando o script do início ao fim.
+| Script | Conteúdo |
+|---|---|
+| `sql/ddl/01_estrutura.sql` | `CREATE DATABASE` e as 22 tabelas com PK, FK, NOT NULL, UNIQUE, CHECK e DEFAULT |
+| `sql/dados/02_carga.sql` | Massa de dados (INSERT) |
+| `sql/testes/03_testes_integridade.sql` | 12 tentativas inválidas que o banco deve rejeitar |
+| `sql/consultas/04_consultas.sql` | SELECT, JOIN, UPDATE, DELETE e consultas gerenciais |
+| `sql/auditoria/05_auditoria.sql` | Consultas de auditoria |
+
+As tabelas são criadas na ordem das dependências: primeiro as independentes (`cliente`, `categoria`, `cargo`, `forma_Pagamento`, `Nota_Fiscal`, `fornecedor`), depois as que as referenciam. Os testes de integridade seguem o formato da Aula 9 — regra → tentativa inválida → erro esperado — e cobrem PK composta, UNIQUE, FK, NOT NULL, CHECK e exclusão bloqueada (RN22).
 
 ---
 
 ## 11. Massa de Dados
 
-> Em construção pela equipe.
+A carga simula a loja de agosto a novembro de 2026, com **205 registros** coerentes entre si:
 
-A massa de dados deverá ter diferentes clientes, produtos novos e seminovos, vendas na loja e online, compras com parcelas e unidades seriadas, para testar relacionamentos, restrições e consultas. Os prompts de IA usados na geração em escala serão documentados no repositório.
+| Dado | Quantidade |
+|---|---|
+| Clientes (com 9 telefones e 9 e-mails) | 8 |
+| Funcionários (com telefones, e-mails e histórico de salários) | 4 |
+| Produtos (consoles novos e seminovos, jogos e acessórios) | 12 |
+| Fornecedores (com 4 endereços) | 3 |
+| Compras com nota fiscal (17 itens) | 6 |
+| Vendas (22 itens e 15 pagamentos) | 15 |
+| Movimentações de estoque | 37 |
+| Atendimentos de pós-venda | 3 |
+
+Situações cobertas: vendas pagas com duas formas de pagamento; venda pendente com pagamento parcial; venda em andamento ainda sem itens; desconto por unidade; devolução no pós-venda com retorno ao estoque; reajuste salarial; produtos abaixo do estoque mínimo. A carga também traz três situações deixadas de propósito para as consultas de auditoria encontrarem (descritas nos comentários do script).
+
+O saldo de `estoque.quantidade_atual` foi calculado a partir das movimentações (entradas das compras − saídas das vendas concluídas). Os prompts de IA usados estão em [docs/prompts-ia.md](docs/prompts-ia.md).
 
 ---
 
 ## 12. Consultas Gerenciais
 
-> SQL em construção pela equipe.
+Arquivo: [sql/consultas/04_consultas.sql](sql/consultas/04_consultas.sql). Cada consulta parte de uma pergunta do gestor.
 
-| Pergunta do gestor | Tabelas |
-|---|---|
-| Quais produtos mais venderam no período? | Venda, Item_Venda, Produto |
-| Qual foi o faturamento por mês e por canal (loja × online)? | Venda, Item_Venda, Entrega |
-| Quais clientes mais compram? | Cliente, Venda, Item_Venda |
-| Quais produtos estão abaixo do estoque mínimo? | Produto, Estoque |
-| Quanto a loja tem a pagar nos próximos 7 dias, por fornecedor? | Conta_Pagar, Compra, Fornecedor |
-| Qual fornecedor oferece o menor preço e prazo para cada produto? | Fornecimento, Fornecedor, Produto |
-| Quais produtos têm mais trocas, devoluções e garantias? | PosVenda, Item_Venda, Produto |
-| Quais seminovos estão parados no estoque há mais de 60 dias? | Unidade_Serializada, Compra, Produto |
+| # | Pergunta | Decisão que apoia |
+|---|---|---|
+| G1 | Quais produtos mais vendem, em quantidade e faturamento? | Priorizar compras e exposição |
+| G2 | Como o faturamento evoluiu mês a mês? | Planejar estoque para os meses fortes |
+| G3 | Qual é o ticket médio? | Metas e vendas casadas |
+| G4 | Quais clientes mais compram? | Fidelidade e ofertas |
+| G5 | Quais produtos estão abaixo do estoque mínimo? | Repor antes de faltar |
+| G6 | Qual vendedor mais faturou? | Desempenho e comissões |
+| G7 | Qual a participação de cada forma de pagamento? | Negociar taxas com operadoras |
+| G8 | Qual categoria fatura mais? | Distribuir espaço e verba de compras |
+| G9 | Qual a margem bruta de cada produto? | Rever preços de margem baixa |
+| G10 | Quanto foi comprado de cada fornecedor e quanto de imposto? | Concentrar compras nos melhores fornecedores |
+| G11 | Quais os motivos de pós-venda e como está o atendimento? | Identificar problemas recorrentes |
+
+O arquivo também tem as consultas básicas Q1 a Q7 (SELECT e JOIN), as alterações U1 a U3 (UPDATE) e as exclusões D1 e D2 (DELETE). As exclusões respeitam a RN22: uma venda abandonada, sem itens nem pagamentos, e um e-mail antigo de cliente.
 
 ---
 
 ## 13. Consultas de Auditoria
 
-> SQL em construção pela equipe.
+Arquivo: [sql/auditoria/05_auditoria.sql](sql/auditoria/05_auditoria.sql). Verificam regras que envolvem mais de uma tabela e por isso não cabem em PK, FK, UNIQUE ou CHECK.
 
-| O que a consulta verifica | Regra |
-|---|---|
-| Vendas concluídas sem nenhum item | RN03 |
-| Compras confirmadas sem nenhum item | RN15 |
-| Itens de produto seriado cuja quantidade difere do número de unidades ligadas | RN25 |
-| Compras cuja soma das parcelas difere do valor total | RN32 |
-| Compras cujo valor total difere da soma dos itens | Coerência de `valor_total` |
-| Produtos cujo saldo em Estoque difere do saldo das movimentações | Coerência de `Estoque.Quantidade` |
-| Contas a pagar vencidas e ainda abertas | RF30 |
-| Ajustes manuais de estoque por funcionário no período | RN17 e RP04 |
+| # | O que verifica | Regra |
+|---|---|---|
+| A1 | Vendas concluídas sem itens | RN03 |
+| A2 | Vendas concluídas com pagamento diferente do valor da venda | RN12 |
+| A3 | Vendas pendentes ou em andamento e quanto falta receber | RN12 |
+| A4 | Compras sem itens | RN15 |
+| A5 | Notas fiscais com valor diferente da soma dos itens | Coerência da nota |
+| A6 | Mesma nota fiscal ligada a mais de uma compra | Uma nota por compra |
+| A7 | Saldo do estoque diferente do saldo das movimentações | RN16, RN28 |
+| A8 | Movimentações de ajuste, para conferência | RN17 |
+| A9 | Produtos sem registro de estoque | RF13 |
+| A10 | Clientes com mesmo telefone ou e-mail | RF05 |
+| A11 | Desconto maior que o preço | RF17 |
+| A12 | Funcionário com mais de um salário em vigor | Histórico de salários |
+| A13 | Pós-venda aberto há mais de 30 dias | RN20 |
+| A14 | Pós-venda de venda não concluída | RN19 |
+
+Com a massa de dados, as auditorias apontam: a nota da compra 6 com R$ 35,00 a mais que os itens (A5), o cabo HDMI com uma unidade a menos no estoque do que nas movimentações (A7), dois clientes com o mesmo telefone residencial (A10), a garantia aberta há mais de 30 dias (A13) e as vendas que ainda aguardam pagamento (A3).
 
 ---
 
 ## 14. Potencial para BI e IA
 
+### 14.1 Do dado à decisão
+
 | Dado | Informação | Decisão |
 |---|---|---|
-| Itens de venda com data e preço praticado | Produtos mais vendidos por período e canal | Reorganizar estoque e compras |
+| Itens de venda com data e preço praticado | Produtos mais vendidos por período | Reorganizar estoque e compras |
 | Estoque e estoque mínimo | Produtos abaixo do mínimo | Repor antes de faltar |
-| Fornecimento | Melhor fornecedor por produto | Escolher de quem comprar |
-| Item de compra e item de venda | Margem por produto | Ajustar preços |
-| Contas a pagar com vencimento | Total a pagar por semana | Planejar o caixa |
-| Unidades seriadas em estoque | Seminovos parados | Fazer promoção ou rever preço |
+| Itens de compra e itens de venda | Margem por produto | Ajustar preços |
+| Notas fiscais por fornecedor | Volume comprado e impostos | Escolher fornecedores |
+| Pagamentos por forma | Participação de crédito, PIX, débito e parcelado | Negociar taxas |
+| Pós-venda por motivo | Problemas recorrentes | Rever produtos e fornecedores |
 
-**Indicadores propostos:** faturamento, ticket médio, margem bruta por produto, giro de estoque, participação por canal, taxa de pós-venda por produto, contas a pagar em 7 e 30 dias e tempo médio do seminovo em estoque.
+### 14.2 Indicadores
 
-**BI — painel comercial.** Pergunta: como as vendas evoluíram nos últimos meses, por canal e por categoria? Dados: Venda + Item_Venda + Produto + Categoria. Benefício: perceber a sazonalidade (lançamentos de consoles, fim de ano) e decidir quando reforçar estoque e promoções.
+Faturamento, ticket médio, margem bruta por produto, giro de estoque (unidades vendidas ÷ saldo médio), participação por categoria, participação por forma de pagamento, faturamento por vendedor e taxa de pós-venda (atendimentos ÷ vendas).
 
-**BI — painel financeiro.** Pergunta: quanto entra e quanto sai nas próximas semanas? Dados: Venda_Pagamento + Conta_Pagar + Compra + Fornecedor. Benefício: responder à pergunta da devolutiva — "quanto tenho a pagar esta semana?" — e evitar atrasos com fornecedores.
+### 14.3 BI
 
-**IA — previsão de demanda.** Problema: a loja compra por intuição e pode ficar sem consoles nas datas de maior procura. Dados: histórico de Item_Venda + Venda + Produto + Movimentação_Estoque. Análise: modelo de série temporal por produto. Benefício: compras mais precisas e menos capital parado.
+**Painel comercial.** Pergunta: como as vendas evoluíram nos últimos meses, por categoria e por vendedor? Dados: `venda` + `item_venda` + `produto` + `categoria` + `funcionario`. Análise: faturamento mensal, ticket médio e ranking de produtos e vendedores. Benefício: perceber a sazonalidade (lançamentos de consoles, Black Friday, fim de ano) e decidir quando reforçar estoque e promoções.
 
-**IA — sugestão de preço para seminovos.** Problema: o preço do seminovo depende da avaliação do funcionário. Dados: Unidade_Serializada (observações) + Produto + Item_Compra (custo) + Item_Venda (preço praticado) + tempo em estoque. Análise: regressão que estima o preço com maior chance de venda. Benefício: precificação padronizada e menos tempo de seminovo parado.
+**Painel de estoque e compras.** Pergunta: o que precisa ser reposto e de quem comprar? Dados: `estoque` + `movimentacao_estoque` + `item_compra` + `Nota_Fiscal` + `fornecedor`. Análise: produtos abaixo do mínimo, giro e custo médio por fornecedor. Benefício: menos falta de produto e menos capital parado.
+
+### 14.4 IA
+
+**Previsão de demanda.** Problema: a loja compra por intuição e pode ficar sem consoles nas datas de maior procura. Dados: histórico de `item_venda` + `venda` (data) + `produto` + `categoria` + `movimentacao_estoque`. Análise: modelo de série temporal que prevê a quantidade vendida por produto nas próximas semanas. Benefício: compras mais precisas e menos estoque parado.
+
+**Sugestão de preço para seminovos.** Problema: o preço do seminovo é definido caso a caso. Dados: produtos seminovos + `item_compra` (custo) + `item_venda` (preço praticado e desconto) + tempo entre a entrada e a venda nas movimentações. Análise: regressão que estima o preço com maior chance de venda em poucos dias. Benefício: preço padronizado e giro mais rápido.
+
+**Alerta de problemas no pós-venda.** Problema: um produto com defeito recorrente gera várias garantias antes de alguém perceber. Dados: `pos_venda` (motivo e descrição) + `venda` + `item_venda` + `produto`. Análise: classificação automática das descrições e alerta quando um produto concentra atendimentos. Benefício: agir com o fornecedor antes que o problema atinja mais clientes.
 
 ---
 
@@ -647,33 +680,36 @@ A massa de dados deverá ter diferentes clientes, produtos novos e seminovos, ve
 | Etapa | Resultado |
 |---|---|
 | Primeira entrega | Problema real → requisitos → regras → DER conceitual (nota 7,75 — "objetivo central atingido com inconsistências") |
-| Revisão | Devolutiva tratada ponto a ponto e modelo lógico construído a partir do diagrama de tabelas da equipe |
-| Entrega final | Modelo lógico normalizado, dicionário de dados, scripts SQL, consultas e análise de BI e IA |
+| Revisão | Devolutiva tratada ponto a ponto; diagrama de tabelas da equipe normalizado |
+| Entrega final | Banco implementado em MySQL, massa de dados, consultas, auditoria, DER e documentação atualizados |
 
 ### 15.1 Pontos da devolutiva
 
 | Ponto da devolutiva | Como foi tratado |
 |---|---|
-| Controle financeiro ("peça sem destino") | Nova entidade ContaPagar, problema P11, RF29, RF30, RN31 a RN33 e PR07 revisado; escopo financeiro declarado (seção 5.6) |
-| Ciclo de vida da Venda | Venda (0,N) ItemVenda e Compra (0,N) ItemCompra; RN03 e RN15 revisadas; verificação por consulta de auditoria |
-| Número de série | Nova entidade UnidadeSerializada (RN25 e RN34) |
-| Origem da movimentação | `referencia_origem` substituído por relacionamentos com ItemCompra, ItemVenda e PosVenda (RN35) |
-| Separar conceitual e lógico | DER sem FKs; chaves estrangeiras e compostas só no modelo lógico |
+| **[VALIDAR COM A EMPRESA] Controle financeiro** | Escopo financeiro declarado (seção 5.6): dentro, os pagamentos recebidos das vendas e o valor e os impostos das notas de compra; fora, contas a pagar e a receber, vencimentos e parcelas. PR07 revisado. Pendente de validação com a empresa |
+| **[JUSTIFICAR] Ciclo de vida da Venda** | `Status_Venda` com EM ANDAMENTO, PENDENTE e CONCLUIDO. Venda (0,N) ItemVenda: a venda pode ser criada antes dos itens. RN03 revisada; a exigência de item na venda concluída é verificada pela auditoria A1 |
+| **[JUSTIFICAR] Número de série** | Avaliado: `numero_serie` no item não representava a unidade física enquanto ela está no estoque. Nesta versão, o controle individual por número de série ficou fora do escopo; o seminovo é um produto próprio, controlado por quantidade (RN18 e RN26 revisadas; RF08 e RN25 fora do escopo). Evolução proposta: entidade UnidadeSerializada |
+| **[OPORTUNIDADE] Origem da movimentação** | O atributo textual `referencia_origem`, sem integridade, foi retirado. A movimentação registra produto, responsável, tipo e data e hora; a coerência das quantidades é conferida pela auditoria A7. Evolução proposta: ligar a movimentação ao item de compra, ao item de venda ou ao pós-venda por chave estrangeira |
+| **Separar conceitual e lógico** | DER sem chaves estrangeiras; FKs e chaves compostas só no modelo lógico e no dicionário |
 
 ### 15.2 Principais alterações de modelagem
 
 | O que foi alterado? | Como era? | Como ficou? | Por que alteramos? |
 |---|---|---|---|
-| Cardinalidade Venda–ItemVenda | (1,N) | (0,N) | A venda em elaboração pode existir sem itens |
-| Cardinalidade Compra–ItemCompra | (1,N) | (0,N) | A compra aberta pode existir sem itens |
-| Número de série | Atributo de ItemCompra e ItemVenda | Entidade UnidadeSerializada | Representar a unidade física durante toda a permanência no estoque |
-| Origem da movimentação | Atributo de texto | Relacionamentos | Garantir que a operação de origem existe |
-| Contas a pagar | — | Entidade ContaPagar | Controlar obrigações com fornecedores por vencimento |
+| Cardinalidade Venda–ItemVenda | (1,N) | (0,N) | A venda em andamento pode existir sem itens (devolutiva) |
+| Cardinalidade Cliente–Venda | Cliente (0,1) | Cliente (1,1) | Toda venda registra o cliente (RN08 revisada) |
 | Telefone e e-mail | Atributos multivalorados | Tabelas próprias | 1FN |
-| Cargo | Atributo de Funcionario | Entidade Cargo e HistoricoSalario | 3FN e histórico de salários |
+| Endereço do fornecedor | Atributo | Tabela `fornecedor_endereco` | Atributo composto e vários endereços por fornecedor (1FN) |
+| Cargo | Atributo de Funcionario | Entidade Cargo | 3FN |
+| Histórico de salário | — | Entidade HistoricoSalario | Guardar o salário de cada período |
+| Nota fiscal | Número na Compra | Entidade NotaFiscal | 3FN: dados da nota dependem da nota |
 | Forma de pagamento | Atributo de Pagamento | Entidade FormaPagamento | Cadastro único das formas aceitas |
-| Estoque | Saldo nas movimentações | Entidade Estoque | Consulta rápida do saldo e do estoque mínimo |
-| Frete | Em Venda e em Entrega | Somente em Entrega | Evitar o mesmo dado em dois lugares |
+| Estoque | Saldo nas movimentações | Entidade Estoque | Consulta rápida do saldo e do mínimo |
+| Frete e totais da venda | Atributos de Venda | Removidos | Valores derivados (3FN) |
+| Número de série, origem da movimentação | Atributos | Removidos | Ver 15.1 |
+| Fornecimento, PerfilAcesso, Entrega | Entidades | Fora do escopo desta versão | Ver 5.5 |
+| Pós-venda | Ligado ao item da venda | Ligado à venda | Simplificação adotada no banco (RN19 revisada) |
 
 ### 15.3 Organização do repositório
 
@@ -681,12 +717,19 @@ A massa de dados deverá ter diferentes clientes, produtos novos e seminovos, ve
 Projeto-Integrador-Modelagem-de-Dados/
 ├── README.md
 ├── docs/
-│   ├── der/                         DER conceitual
-│   ├── modelo-logico/               modelo lógico, normalização e diagrama
-│   ├── dicionario-dados-conceitual.md
-│   └── checklist-entrega.md
-├── sql/                             scripts MySQL (em construção)
-├── evidencias/                      prints dos testes (em construção)
+│   ├── der/                    DER v2 (atual) e v1 (primeira entrega)
+│   ├── modelo-logico/          modelo lógico, normalização, restrições e diagrama
+│   ├── dicionario-dados/       dicionário atual e o da primeira entrega
+│   ├── prompts-ia.md
+│   ├── checklist-entrega-final.md
+│   └── checklist-primeira-entrega.md
+├── sql/
+│   ├── ddl/          01_estrutura.sql
+│   ├── dados/        02_carga.sql
+│   ├── testes/       03_testes_integridade.sql
+│   ├── consultas/    04_consultas.sql
+│   └── auditoria/    05_auditoria.sql
+├── evidencias/                 prints da execução dos scripts
 └── apresentacao/
 ```
 
@@ -694,9 +737,9 @@ Projeto-Integrador-Modelagem-de-Dados/
 
 ## 16. Conclusão
 
-A revisão mostrou que um modelo pode estar bem construído e, ainda assim, não se encaixar em todas as peças do projeto. O controle financeiro aparecia nos processos, mas não no DER. O número de série estava nos itens, mas a unidade física não existia enquanto estava no estoque. A origem das movimentações era um texto que o banco não conseguia validar. Responder às perguntas "onde esta necessidade chegou no DER?" e "de qual necessidade surgiu este elemento?" levou às entidades ContaPagar e UnidadeSerializada e aos novos relacionamentos.
+A revisão mostrou que um modelo pode estar bem construído e, ainda assim, não se encaixar em todas as peças do projeto. Responder às perguntas da devolutiva — "onde esta necessidade chegou no DER?" e "de qual necessidade surgiu este elemento?" — levou a equipe a revisar requisitos e regras e a deixar claro o que o banco implementa e o que fica para uma próxima versão, em vez de prometer funções que o modelo não sustenta.
 
-Na conversão para o modelo lógico, a normalização deixou cada fato em um único lugar: o fornecedor separado das condições de fornecimento, a compra separada dos seus produtos, telefones e e-mails em tabelas próprias. Cada restrição passou a ter origem em uma regra de negócio, e as regras que envolvem mais de uma tabela serão verificadas por consultas de auditoria. Com o banco implementado, os dados de vendas, estoque, compras e contas a pagar passam a responder às perguntas do gestor e abrem caminho para BI e IA.
+Na conversão para o modelo lógico, a normalização deixou cada fato em um único lugar: telefones, e-mails e endereços em tabelas próprias, o cargo e a nota fiscal como cadastros independentes e os produtos da compra fora da tabela de compra. Cada restrição do script protege uma regra do negócio, e as regras que envolvem mais de uma tabela são verificadas por consultas de auditoria. Com a massa de dados, o banco já responde a perguntas reais do gestor — o que mais vende, o que precisa ser reposto, quanto rende cada produto — e abre caminho para BI e para aplicações de IA como a previsão de demanda.
 
 ---
 

@@ -1,0 +1,14 @@
+graph E {
+  graph [layout=twopi, root=MOVIMENTACAO_ESTOQUE, ranksep=1.25, overlap=false, pad=0.25, fontname="Helvetica", splines=true];
+  node [fontname="Helvetica", fontsize=13];
+  edge [color="#36536B"];
+  MOVIMENTACAO_ESTOQUE [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>MOVIMENTACAO_ESTOQUE</B>>, width=2.6, height=0.8];
+  a0 [shape=ellipse, style="solid", peripheries=1, label=<<U>id_movimentacao</U>>];
+  MOVIMENTACAO_ESTOQUE -- a0;
+  a1 [shape=ellipse, style="solid", peripheries=1, label="tipo_movimentacao"];
+  MOVIMENTACAO_ESTOQUE -- a1;
+  a2 [shape=ellipse, style="solid", peripheries=1, label="quantidade"];
+  MOVIMENTACAO_ESTOQUE -- a2;
+  a3 [shape=ellipse, style="solid", peripheries=1, label="data_movimentacao"];
+  MOVIMENTACAO_ESTOQUE -- a3;
+}

@@ -1,0 +1,16 @@
+graph E {
+  graph [layout=twopi, root=POS_VENDA, ranksep=1.25, overlap=false, pad=0.25, fontname="Helvetica", splines=true];
+  node [fontname="Helvetica", fontsize=13];
+  edge [color="#36536B"];
+  POS_VENDA [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>POS_VENDA</B>>, width=2.6, height=0.8];
+  a0 [shape=ellipse, style="solid", peripheries=1, label=<<U>id_pos_venda</U>>];
+  POS_VENDA -- a0;
+  a1 [shape=ellipse, style="solid", peripheries=1, label="data_atendimento"];
+  POS_VENDA -- a1;
+  a2 [shape=ellipse, style="solid", peripheries=1, label="motivo_contato"];
+  POS_VENDA -- a2;
+  a3 [shape=ellipse, style="solid", peripheries=1, label="descricao_ocorrencia"];
+  POS_VENDA -- a3;
+  a4 [shape=ellipse, style="solid", peripheries=1, label="status_atendimento"];
+  POS_VENDA -- a4;
+}

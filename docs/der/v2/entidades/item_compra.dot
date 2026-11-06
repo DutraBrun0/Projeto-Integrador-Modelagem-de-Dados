@@ -1,0 +1,10 @@
+graph E {
+  graph [layout=twopi, root=ITEM_COMPRA, ranksep=1.25, overlap=false, pad=0.25, fontname="Helvetica", splines=true];
+  node [fontname="Helvetica", fontsize=13];
+  edge [color="#36536B"];
+  ITEM_COMPRA [shape=box, style="filled,rounded", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>ITEM_COMPRA</B><BR/><FONT POINT-SIZE="11">(associativa: ◇ dentro do □)</FONT>>];
+  a0 [shape=ellipse, style="solid", peripheries=1, label="quantidade"];
+  ITEM_COMPRA -- a0;
+  a1 [shape=ellipse, style="solid", peripheries=1, label="valor_pago"];
+  ITEM_COMPRA -- a1;
+}

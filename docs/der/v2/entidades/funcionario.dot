@@ -1,0 +1,34 @@
+graph E {
+  graph [layout=twopi, root=FUNCIONARIO, ranksep=1.25, overlap=false, pad=0.25, fontname="Helvetica", splines=true];
+  node [fontname="Helvetica", fontsize=13];
+  edge [color="#36536B"];
+  FUNCIONARIO [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>FUNCIONARIO</B>>, width=2.6, height=0.8];
+  a0 [shape=ellipse, style="solid", peripheries=1, label=<<U>id_funcionario</U>>];
+  FUNCIONARIO -- a0;
+  a1 [shape=ellipse, style="solid", peripheries=1, label="nome"];
+  FUNCIONARIO -- a1;
+  a2 [shape=ellipse, style="solid", peripheries=1, label="sobrenome"];
+  FUNCIONARIO -- a2;
+  a3 [shape=ellipse, style="solid", peripheries=1, label="CPF"];
+  FUNCIONARIO -- a3;
+  a4 [shape=ellipse, style="solid", peripheries=1, label="data_admissao"];
+  FUNCIONARIO -- a4;
+  a5 [shape=ellipse, style="solid", peripheries=2, label="telefone"];
+  FUNCIONARIO -- a5;
+  a5_0 [shape=ellipse, label="DDI", fontsize=11];
+  a5 -- a5_0;
+  a5_1 [shape=ellipse, label="DDD", fontsize=11];
+  a5 -- a5_1;
+  a5_2 [shape=ellipse, label="Codigo_operadora", fontsize=11];
+  a5 -- a5_2;
+  a5_3 [shape=ellipse, label="numero", fontsize=11];
+  a5 -- a5_3;
+  a5_4 [shape=ellipse, label="tipo", fontsize=11];
+  a5 -- a5_4;
+  a6 [shape=ellipse, style="solid", peripheries=2, label="email"];
+  FUNCIONARIO -- a6;
+  a6_0 [shape=ellipse, label="email", fontsize=11];
+  a6 -- a6_0;
+  a6_1 [shape=ellipse, label="tipo", fontsize=11];
+  a6 -- a6_1;
+}

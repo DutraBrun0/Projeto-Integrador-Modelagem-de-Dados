@@ -1,0 +1,12 @@
+graph E {
+  graph [layout=twopi, root=ITEM_VENDA, ranksep=1.25, overlap=false, pad=0.25, fontname="Helvetica", splines=true];
+  node [fontname="Helvetica", fontsize=13];
+  edge [color="#36536B"];
+  ITEM_VENDA [shape=box, style="filled,rounded", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>ITEM_VENDA</B><BR/><FONT POINT-SIZE="11">(associativa: ◇ dentro do □)</FONT>>];
+  a0 [shape=ellipse, style="solid", peripheries=1, label="Quantidade"];
+  ITEM_VENDA -- a0;
+  a1 [shape=ellipse, style="solid", peripheries=1, label="preco_unitario"];
+  ITEM_VENDA -- a1;
+  a2 [shape=ellipse, style="solid", peripheries=1, label="desconto_unitario"];
+  ITEM_VENDA -- a2;
+}

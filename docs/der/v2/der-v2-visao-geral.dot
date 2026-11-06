@@ -1,0 +1,77 @@
+digraph DER {
+  graph [layout=dot, rankdir=LR, splines=true, nodesep=0.45, ranksep=0.9, pad=0.4, fontname="Helvetica", labelloc=t, fontsize=26, label=<<B>DER CONCEITUAL v2 — START CAMPOS (visão integrada)</B><BR/><FONT POINT-SIZE="14">Notação de Chen · cardinalidade (mínimo, máximo) · verde = elemento novo na entrega final</FONT>>];
+  node [fontname="Helvetica", fontsize=13];
+  edge [dir=none, fontname="Helvetica", fontsize=12, color="#36536B", fontcolor="#7A1F1F"];
+  CLIENTE [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>CLIENTE</B>>, width=2.3, height=0.7];
+  FUNCIONARIO [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>FUNCIONARIO</B>>, width=2.3, height=0.7];
+  CARGO [shape=box, style="filled", fillcolor="#E6F6EA", color="#1F5A8A", penwidth=2, label=<<B>CARGO</B>>, width=2.3, height=0.7];
+  HISTORICO_SALARIO [shape=box, style="filled", fillcolor="#E6F6EA", color="#1F5A8A", penwidth=2, label=<<B>HISTORICO_SALARIO</B>>, width=2.3, height=0.7];
+  CATEGORIA [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>CATEGORIA</B>>, width=2.3, height=0.7];
+  PRODUTO [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>PRODUTO</B>>, width=2.3, height=0.7];
+  ESTOQUE [shape=box, style="filled", fillcolor="#E6F6EA", color="#1F5A8A", penwidth=2, label=<<B>ESTOQUE</B>>, width=2.3, height=0.7];
+  MOVIMENTACAO_ESTOQUE [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>MOVIMENTACAO_ESTOQUE</B>>, width=2.3, height=0.7];
+  FORNECEDOR [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>FORNECEDOR</B>>, width=2.3, height=0.7];
+  NOTA_FISCAL [shape=box, style="filled", fillcolor="#E6F6EA", color="#1F5A8A", penwidth=2, label=<<B>NOTA_FISCAL</B>>, width=2.3, height=0.7];
+  COMPRA [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>COMPRA</B>>, width=2.3, height=0.7];
+  VENDA [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>VENDA</B>>, width=2.3, height=0.7];
+  FORMA_PAGAMENTO [shape=box, style="filled", fillcolor="#E6F6EA", color="#1F5A8A", penwidth=2, label=<<B>FORMA_PAGAMENTO</B>>, width=2.3, height=0.7];
+  VENDA_PAGAMENTO [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>VENDA_PAGAMENTO</B>>, width=2.3, height=0.7];
+  POS_VENDA [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>POS_VENDA</B>>, width=2.3, height=0.7];
+  subgraph cluster_ITEM_VENDA {
+    style="filled"; fillcolor="#E8F2FC"; color="#1F5A8A"; penwidth=2; label=<<B>ITEM_VENDA</B>>; fontsize=13; margin=10;
+    ITEM_VENDA [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="contém", width=1.6, height=0.9];
+  }
+  VENDA -> ITEM_VENDA [label="(0,N)"];
+  ITEM_VENDA -> PRODUTO [label="(0,N)"];
+  subgraph cluster_ITEM_COMPRA {
+    style="filled"; fillcolor="#E8F2FC"; color="#1F5A8A"; penwidth=2; label=<<B>ITEM_COMPRA</B>>; fontsize=13; margin=10;
+    ITEM_COMPRA [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="contém", width=1.6, height=0.9];
+  }
+  COMPRA -> ITEM_COMPRA [label="(0,N)"];
+  ITEM_COMPRA -> PRODUTO [label="(0,N)"];
+  r_realiza [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="realiza", fontsize=11, width=1.3, height=0.7];
+  CLIENTE -> r_realiza [label="(0,N)"];
+  r_realiza -> VENDA [label="(1,1)"];
+  r_reg_venda [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="registra", fontsize=11, width=1.3, height=0.7];
+  FUNCIONARIO -> r_reg_venda [label="(0,N)"];
+  r_reg_venda -> VENDA [label="(1,1)"];
+  r_recebe [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="recebe", fontsize=11, width=1.3, height=0.7];
+  VENDA -> r_recebe [label="(0,N)"];
+  r_recebe -> VENDA_PAGAMENTO [label="(1,1)"];
+  r_usa [shape=diamond, style=filled, fillcolor="#E6F6EA", color="#1F5A8A", label="é paga com", fontsize=11, width=1.3, height=0.7];
+  FORMA_PAGAMENTO -> r_usa [label="(0,N)"];
+  r_usa -> VENDA_PAGAMENTO [label="(1,1)"];
+  r_origina_pv [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="origina", fontsize=11, width=1.3, height=0.7];
+  VENDA -> r_origina_pv [label="(0,N)"];
+  r_origina_pv -> POS_VENDA [label="(1,1)"];
+  r_atende_pv [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="atende", fontsize=11, width=1.3, height=0.7];
+  FUNCIONARIO -> r_atende_pv [label="(0,N)"];
+  r_atende_pv -> POS_VENDA [label="(1,1)"];
+  r_ocupa [shape=diamond, style=filled, fillcolor="#E6F6EA", color="#1F5A8A", label="ocupa", fontsize=11, width=1.3, height=0.7];
+  CARGO -> r_ocupa [label="(0,N)"];
+  r_ocupa -> FUNCIONARIO [label="(1,1)"];
+  r_recebe_sal [shape=diamond, style=filled, fillcolor="#E6F6EA", color="#1F5A8A", label="recebe", fontsize=11, width=1.3, height=0.7];
+  FUNCIONARIO -> r_recebe_sal [label="(0,N)"];
+  r_recebe_sal -> HISTORICO_SALARIO [label="(1,1)"];
+  r_classifica [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="classifica", fontsize=11, width=1.3, height=0.7];
+  CATEGORIA -> r_classifica [label="(0,N)"];
+  r_classifica -> PRODUTO [label="(1,1)"];
+  r_controla [shape=diamond, style=filled, fillcolor="#E6F6EA", color="#1F5A8A", label="controla", fontsize=11, width=1.3, height=0.7];
+  PRODUTO -> r_controla [label="(0,1)"];
+  r_controla -> ESTOQUE [label="(1,1)"];
+  r_possui_mov [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="possui", fontsize=11, width=1.3, height=0.7];
+  PRODUTO -> r_possui_mov [label="(0,N)"];
+  r_possui_mov -> MOVIMENTACAO_ESTOQUE [label="(1,1)"];
+  r_executa [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="executa", fontsize=11, width=1.3, height=0.7];
+  FUNCIONARIO -> r_executa [label="(0,N)"];
+  r_executa -> MOVIMENTACAO_ESTOQUE [label="(1,1)"];
+  r_atende_c [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="atende", fontsize=11, width=1.3, height=0.7];
+  FORNECEDOR -> r_atende_c [label="(0,N)"];
+  r_atende_c -> COMPRA [label="(1,1)"];
+  r_reg_compra [shape=diamond, style=filled, fillcolor="#FFF4D6", color="#1F5A8A", label="registra", fontsize=11, width=1.3, height=0.7];
+  FUNCIONARIO -> r_reg_compra [label="(0,N)"];
+  r_reg_compra -> COMPRA [label="(1,1)"];
+  r_documenta [shape=diamond, style=filled, fillcolor="#E6F6EA", color="#1F5A8A", label="documenta", fontsize=11, width=1.3, height=0.7];
+  NOTA_FISCAL -> r_documenta [label="(0,N)"];
+  r_documenta -> COMPRA [label="(1,1)"];
+}

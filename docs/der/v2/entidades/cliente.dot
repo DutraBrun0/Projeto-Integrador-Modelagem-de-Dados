@@ -1,0 +1,36 @@
+graph E {
+  graph [layout=twopi, root=CLIENTE, ranksep=1.25, overlap=false, pad=0.25, fontname="Helvetica", splines=true];
+  node [fontname="Helvetica", fontsize=13];
+  edge [color="#36536B"];
+  CLIENTE [shape=box, style="filled", fillcolor="#E8F2FC", color="#1F5A8A", penwidth=2, label=<<B>CLIENTE</B>>, width=2.6, height=0.8];
+  a0 [shape=ellipse, style="solid", peripheries=1, label=<<U>id_cliente</U>>];
+  CLIENTE -- a0;
+  a1 [shape=ellipse, style="solid", peripheries=1, label="nome"];
+  CLIENTE -- a1;
+  a2 [shape=ellipse, style="solid", peripheries=1, label="sobrenome"];
+  CLIENTE -- a2;
+  a3 [shape=ellipse, style="solid", peripheries=1, label="CPF"];
+  CLIENTE -- a3;
+  a4 [shape=ellipse, style="solid", peripheries=1, label="data_nascimento"];
+  CLIENTE -- a4;
+  a5 [shape=ellipse, style="solid", peripheries=1, label="tipo_cliente"];
+  CLIENTE -- a5;
+  a6 [shape=ellipse, style="solid", peripheries=2, label="telefone"];
+  CLIENTE -- a6;
+  a6_0 [shape=ellipse, label="DDI", fontsize=11];
+  a6 -- a6_0;
+  a6_1 [shape=ellipse, label="DDD", fontsize=11];
+  a6 -- a6_1;
+  a6_2 [shape=ellipse, label="Codigo_operadora", fontsize=11];
+  a6 -- a6_2;
+  a6_3 [shape=ellipse, label="numero", fontsize=11];
+  a6 -- a6_3;
+  a6_4 [shape=ellipse, label="tipo", fontsize=11];
+  a6 -- a6_4;
+  a7 [shape=ellipse, style="solid", peripheries=2, label="email"];
+  CLIENTE -- a7;
+  a7_0 [shape=ellipse, label="email", fontsize=11];
+  a7 -- a7_0;
+  a7_1 [shape=ellipse, label="tipo", fontsize=11];
+  a7 -- a7_1;
+}
